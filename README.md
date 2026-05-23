@@ -1,15 +1,18 @@
-# python-template
+# Lark-HR-Agent
 
-Python 项目开发模版
+## 业务痛点
+- 估能力缺失：运营 HR 不懂技术 → 无法判断"这个候选人的 Java 水平是初级还是资深"、"他写的项目是 CRUD 还是有真东西"。关键词匹配（出现"Spring Boot"就算通过）会让大量水货简历通过，也会误杀写法不标准但实力不错的人。
+- 信息提取低效且不一致：人工读 PDF → 提取姓名/学校/工作年限/技术栈 → 录入表格，每份简历 5-10 分钟，且不同 HR 提取的字段粒度不一致（有人写"3 年 Java"，有人写"Java/Spring/MySQL 3 年"）。
+- 一面无法深入：HR 一面只能问"你为什么离职"、"期望薪资"这类通用问题，没法基于候选人简历问"你这个项目的 Redis Pub/Sub 是怎么保证消息不丢的"，导致一面过滤价值很低，技术面才能真正筛人，但技术 leader 时间贵。
 
-# 使用说明
-
-1. fork 本仓库到自己的个人仓库
-2. 修改项目信息
-3. 使用 `uv sync` 同步 `pre-commit` 配置到本地
-4. 执行 `pre-commit` 初始化本地 Linter
-5. 项目 Python 设定为 Python 3.12
-6. commit message 遵循 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 规范
-7. 修改完代码后，经过 `pre-commit` 检查，提交 pr，并指定 @anine09 为 reviewer
-
-**注意：无法通过 CI 检查的代码，将会被打回修改！**
+## 预期架构设计
+```
+飞书多维表格（触发源 + 数据回写目标）
+        ↓ Webhook / 轮询
+    HR Agent 服务（FastAPI）
+        ├─ PDF 下载模块（飞书云文档 API）
+        ├─ PDF 解析模块（MinerU / PyMuPDF）
+        ├─ 信息抽取 Agent（LLM 结构化输出）
+        ├─ 评分 Agent（LLM + 岗位 JD 上下文）
+        └─ 飞书回写模块（多维表格 API）
+```
